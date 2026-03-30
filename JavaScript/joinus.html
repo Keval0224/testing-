@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITM Login Portal</title>
+    <link rel="stylesheet" href="joinus.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="login-box">
+
+        <img src="8c0fa76f-d25c-48dc-8c4a-2255d01e2394.jpeg" class="logo" alt="College Logo">
+
+        <h2>Welcome to ITM Portal</h2>
+
+        <form id="loginForm">
+
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter Username" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter Password" required>
+            </div>
+
+
+            <!-- RADIO BUTTON GROUP -->
+            <div class="role-buttons">
+
+                <label class="role-option">
+                    <input type="radio" name="role" value="student" id="studentRadio">
+                    <span>Student</span>
+                </label>
+
+
+                <label class="role-option">
+                    <input type="radio" name="role" value="admin" id="adminRadio">
+                    <span>Admin</span>
+                </label>
+
+            </div>
+
+            <button type="submit" class="loginBtn">Login</button>
+
+            <div class="forgot-password">
+                <a href="#">Forgot Password?</a>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let role = document.querySelector('input[name="role"]:checked');
+
+    if (!role) {
+        alert("Please select Student or Admin");
+        return;
+    }
+
+    if (role.value === "student") {
+        window.location.href = "student_dashboard.html";
+    } else {
+        window.location.href = "admin_dashboard.html";
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel — ITM SLS Baroda University</title>
+
+  <!-- Chart.js and SheetJS from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root{
+      --accent:#0a63b7;
+      --accent-2:#074f9a;
+      --muted:#65707a;
+      --bg:#f4f7fb;
+      --card:#fff;
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, Arial, sans-serif}
+    body{margin:0;background:var(--bg);color:#0b2540;-webkit-font-smoothing:antialiased}
+    .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+    .sidebar{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#fff;padding:20px;position:sticky;top:0;height:100vh}
+    .logo{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .logo img{width:52px;height:52px;border-radius:10px;background:#fff;padding:6px}
+    .logo h3{margin:0;font-size:16px}
+    .nav{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+    .nav button{background:transparent;border:none;color:#eaf4ff;text-align:left;padding:10px;border-radius:10px;cursor:pointer;font-weight:600}
+    .nav button.active{background:rgba(255,255,255,0.08)}
+    main{padding:18px 28px}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:12px;background:linear-gradient(90deg,var(--accent),#0b5bb7);color:#fff;box-shadow:0 8px 28px rgba(2,12,37,0.08)}
+    .header h1{margin:0;font-size:18px}
+    .header .actions{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn.ghost{background:#eef6ff;color:var(--accent);border:1px solid rgba(10,99,183,0.08)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:18px}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 12px 30px rgba(2,12,37,0.06)}
+    .small{font-size:13px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border-bottom:1px solid #eef3fb;text-align:left}
+    th{background:#f6fbff;color:var(--accent);font-weight:700}
+    .page{display:none}
+    .page.active{display:block}
+    .controls{display:flex;gap:8px;align-items:center}
+    .input{padding:8px;border-radius:8px;border:1px solid #e6eefb}
+    .profile-pic{width:72px;height:72px;border-radius:10px;background:#eef6ff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .profile-pic img{width:100%;height:100%;object-fit:cover}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:60;padding:12px}
+    .modal-content{width:100%;max-width:920px;background:#fff;border-radius:10px;padding:14px;max-height:88vh;overflow:auto;position:relative}
+    .close-btn{position:absolute;right:12px;top:12px;border:none;background:#eee;padding:8px;border-radius:8px;cursor:pointer}
+    .flex{display:flex;gap:12px;align-items:center}
+    .muted{color:var(--muted)}
+    #chartWrap{width:360px;height:220px}
+    @media (max-width:980px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding-bottom:12px}.logo img{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app" role="application">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" aria-label="Admin navigation">
+      <div class="logo">
+        <img src="https://f2.leadsquaredcdn.com/t/itmbu1/content/common/images/itmbu_logo.png" alt="ITM logo">
+        <div>
+          <h3>Admin Panel</h3>
+          <div class="small">ITM SLS Baroda University</div>
+        </div>
+      </div>
+      <nav class="nav" role="navigation" aria-label="Main">
+        <button id="nav-dashboard" class="active" onclick="navTo('dashboard')">Dashboard</button>
+        <button id="nav-students" onclick="navTo('students')">Manage Students</button>
+        <button id="nav-recruiters" onclick="navTo('recruiters')">Manage Recruiters</button>
+        <button id="nav-drives" onclick="navTo('drives')">Manage Drives</button>
+        <button id="nav-training" onclick="navTo('training')">Training Modules</button>
+        <button id="nav-resumeReview" onclick="navTo('resumeReview')">Resume Review</button>
+        <button id="nav-adminProfile" onclick="navTo('adminProfile')">Admin Profile</button>
+        <button onclick="if(confirm('Log out (demo)?')){navTo('dashboard'); alert('Logged out (demo)')}">Logout</button>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+      <header class="header" role="banner">
+        <h1>ITM SLS — Admin</h1>
+        <div class="actions">
+          <button class="btn ghost" onclick="openSampleData()">Seed Demo Data</button>
+
+          <!-- Import Excel (new) -->
+          <label for="excelImport" class="btn ghost" style="cursor:pointer;padding:8px 12px;">
+            Import Excel
+            <input id="excelImport" type="file" accept=".xls,.xlsx" style="display:none" />
+          </label>
+
+          <!-- Chart area small preview -->
+          <div id="chartWrap" style="background:transparent"></div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="page active" aria-labelledby="dashTitle">
+        <h2 id="dashTitle">Dashboard</h2>
+        <div class="grid" style="margin-top:12px">
+          <div class="card">
+            <h3>Total Students</h3>
+            <div id="statStudents" style="font-weight:800;font-size:20px">0</div>
+            <div class="small">Registered students</div>
+          </div>
+          <div class="card">
+            <h3>Total Recruiters</h3>
+            <div id="statRecruiters" style="font-weight:800;font-size:20px">0</div>
+            <div class="small">Companies registered</div>
+          </div>
+          <div class="card">
+            <h3>Upcoming Drives</h3>
+            <div id="statDrives" style="font-weight:800;font-size:20px">0</div>
+            <div class="small">Scheduled drives</div>
+          </div>
+          <div class="card">
+            <h3>Pending Resumes</h3>
+            <div id="statResumes" style="font-weight:800;font-size:20px">0</div>
+            <div class="small">Awaiting review</div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:16px">
+          <div class="card" style="grid-column:span 2">
+            <h3>Recent Activity</h3>
+            <div id="activityList" class="muted" style="margin-top:8px">No recent activity</div>
+          </div>
+          <div class="card">
+            <h3>Notifications</h3>
+            <div id="adminNotifs" style="margin-top:8px"></div>
+            <div style="margin-top:8px"><button class="btn ghost" onclick="clearNotifs()">Clear</button></div>
+          </div>
+          <div class="card">
+            <h3>Quick Actions</h3>
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" onclick="navTo('students')">Add Student</button>
+              <button class="btn ghost" onclick="navTo('drives')">Create Drive</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MANAGE STUDENTS -->
+      <section id="students" class="page" aria-labelledby="studentsTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="studentsTitle">Manage Students</h2>
+          <div class="controls">
+            <input id="studentSearch" class="input" placeholder="Search student..." oninput="renderStudents()">
+            <button class="btn" onclick="openStudentModal()">Add Student</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <table aria-label="Students table">
+            <thead><tr><th>Name</th><th>Email</th><th>Course</th><th>Year</th><th>Action</th></tr></thead>
+            <tbody id="studentsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MANAGE RECRUITERS -->
+      <section id="recruiters" class="page" aria-labelledby="recruitersTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="recruitersTitle">Manage Recruiters</h2>
+          <div class="controls">
+            <input id="recruiterSearch" class="input" placeholder="Search company..." oninput="renderRecruiters()">
+            <button class="btn" onclick="openRecruiterModal()">Add Recruiter</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <table aria-label="Recruiters table">
+            <thead><tr><th>Company</th><th>Contact</th><th>Industry</th><th>Action</th></tr></thead>
+            <tbody id="recruitersTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MANAGE DRIVES -->
+      <section id="drives" class="page" aria-labelledby="drivesTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="drivesTitle">Manage Drives</h2>
+          <div class="controls">
+            <input id="driveSearchAdmin" class="input" placeholder="Search drive..." oninput="renderDrivesAdmin()">
+            <button class="btn" onclick="openDriveModal()">Create Drive</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <table aria-label="Drives table">
+            <thead><tr><th>Company</th><th>Date</th><th>Role</th><th>Location</th><th>Action</th></tr></thead>
+            <tbody id="drivesTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TRAINING MODULES -->
+      <section id="training" class="page" aria-labelledby="trainingTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="trainingTitle">Training Modules</h2>
+          <div class="controls">
+            <button class="btn" onclick="openModuleModal()">Upload Module</button>
+            <button class="btn ghost" onclick="renderModules()">Refresh</button>
+          </div>
+        </div>
+        <div id="modulesWrap" class="grid" style="margin-top:12px"></div>
+      </section>
+
+      <!-- RESUME REVIEW -->
+      <section id="resumeReview" class="page" aria-labelledby="resumeReviewTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="resumeReviewTitle">Resume Review Panel</h2>
+          <div class="controls">
+            <input id="resumeSearch" class="input" placeholder="Search resumes..." oninput="renderResumes()">
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <table aria-label="Resumes table">
+            <thead><tr><th>Student</th><th>File Name</th><th>Uploaded</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="resumesTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ADMIN PROFILE -->
+      <section id="adminProfile" class="page" aria-labelledby="adminProfileTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2 id="adminProfileTitle">Admin Profile</h2>
+          <div class="small">Edit profile and password (demo)</div>
+        </div>
+        <div class="card" style="margin-top:12px;display:flex;gap:18px;align-items:flex-start">
+          <div style="flex:1">
+            <h3>Details</h3>
+            <div style="margin-top:8px">
+              <label class="small">Name</label>
+              <input id="admin_name" class="input" style="width:100%" />
+            </div>
+            <div style="margin-top:8px">
+              <label class="small">Email</label>
+              <input id="admin_email" class="input" style="width:100%" />
+            </div>
+            <div style="margin-top:8px">
+              <label class="small">Change Password</label>
+              <div style="display:flex;gap:8px"><input id="admin_pwd" type="password" class="input" placeholder="new password"><button class="btn" onclick="changeAdminPwd()">Save Password</button></div>
+            </div>
+            <div style="margin-top:12px"><button class="btn" onclick="saveAdminProfile()">Save Profile</button></div>
+          </div>
+          <aside style="width:220px">
+            <div style="text-align:center">
+              <div class="profile-pic" id="adminPicWrap"><img id="adminPic" src="" style="display:none"><div id="adminNoPic" class="muted">No photo</div></div>
+              <div style="margin-top:8px"><input id="admin_photo" type="file" accept="image/*" style="display:none"><button class="btn ghost" onclick="document.getElementById('admin_photo').click()">Upload Photo</button></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">Close</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+<script>
+/* -----------------------
+   Storage keys & defaults
+   -----------------------*/
+const S = {
+  students: 'adm_students_v1',
+  recruiters: 'adm_recruiters_v1',
+  drives: 'adm_drives_v1',
+  modules: 'adm_modules_v1',
+  resumes: 'adm_resumes_v1',
+  admin: 'adm_profile_v1',
+  notifs: 'adm_notifs_v1',
+  activity: 'adm_activity_v1'
+};
+const sampleStudents = [
+  {id:'s1',name:'Jay Patel',email:'jay@example.com',course:'B.Tech CSE',year:'3'},
+  {id:'s2',name:'Riya Shah',email:'riya@example.com',course:'BBA',year:'2'},
+  {id:'s3',name:'Devanshi Thakor',email:'devanshi@example.com',course:'MCA',year:'2'}
+];
+const sampleRecruiters = [
+  {id:'c1',company:'TCS',contact:'hr@tcs.com',industry:'IT'},
+  {id:'c2',company:'Infosys',contact:'hr@infosys.com',industry:'IT'},
+  {id:'c3',company:'HDFC',contact:'hr@hdfc.com',industry:'Finance'}
+];
+const sampleDrives = [
+  {id:'d1',company:'TCS',date:'2025-12-02',role:'Software Dev',location:'On-Campus'},
+  {id:'d2',company:'Infosys',date:'2025-12-06',role:'System Engineer',location:'Hybrid'}
+];
+const sampleModules = [
+  {id:'m1',title:'Aptitude & Logical Reasoning',video:'https://www.youtube.com/embed/1u0kQGVdYQ4',notes:'Aptitude notes...'},
+  {id:'m2',title:'Communication & Soft Skills',video:'https://www.youtube.com/embed/3Yl8dS6t5k4',notes:'Soft skills notes...'}
+];
+/* -----------------------
+   Helpers: load/save
+   -----------------------*/
+function load(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : (fallback===undefined?null:fallback);
+  }catch(e){ return fallback; }
+}
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+/* -----------------------
+   Navigation
+   -----------------------*/
+function navTo(id){
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-'+id) || document.querySelector('.nav button[onclick*="'+id+'"]');
+  if(navBtn) navBtn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page = document.getElementById(id);
+  if(page) page.classList.add('active');
+  // render page-specific
+  if(id==='dashboard') renderDashboard();
+  if(id==='students') renderStudents();
+  if(id==='recruiters') renderRecruiters();
+  if(id==='drives') renderDrivesAdmin();
+  if(id==='training') renderModules();
+  if(id==='resumeReview') renderResumes();
+  if(id==='adminProfile') renderAdminProfile();
+}
+/* -----------------------
+   Modal helpers
+   -----------------------*/
+function showModal(html){ document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').style.display = 'flex'; }
+function closeModal(){ document.getElementById('modalBody').innerHTML=''; document.getElementById('modal').style.display = 'none'; }
+/* -----------------------
+   Dashboard & Graph
+   -----------------------*/
+let dashboardChart = null;
+function addActivity(text){
+  const list = load(S.activity, []);
+  list.unshift({text, at:new Date().toISOString()});
+  save(S.activity, list.slice(0,30));
+  renderDashboard();
+}
+function addNotif(text){
+  const n = load(S.notifs, []);
+  n.unshift({text, at:new Date().toISOString()});
+  save(S.notifs, n.slice(0,20));
+}
+function clearNotifs(){ localStorage.removeItem(S.notifs); renderDashboard(); }
+function renderDashboard(){
+  const students = load(S.students, []);
+  const recruiters = load(S.recruiters, []);
+  const drives = load(S.drives, []);
+  const resumes = load(S.resumes, []);
+  document.getElementById('statStudents').textContent = students.length;
+  document.getElementById('statRecruiters').textContent = recruiters.length;
+  document.getElementById('statDrives').textContent = drives.length;
+  const pending = resumes.filter(r=>r.status==='Pending').length;
+  document.getElementById('statResumes').textContent = pending;
+  // notifications
+  const notifs = load(S.notifs, []);
+  const no = document.getElementById('adminNotifs'); no.innerHTML = '';
+  if(notifs.length===0) no.innerHTML = '<div class="small muted">No notifications</div>';
+  else notifs.slice(0,5).forEach(n => {
+    const d = document.createElement('div'); d.style.marginBottom='6px';
+    d.innerHTML = `<div style="font-weight:700">${n.text}</div><div class="small muted">${new Date(n.at).toLocaleString()}</div>`;
+    no.appendChild(d);
+  });
+  // activity
+  const acts = load(S.activity, []);
+  const actElem = document.getElementById('activityList');
+  actElem.innerHTML = acts.length ? acts.slice(0,6).map(a=>`<div style="margin-bottom:8px"><strong>${a.text}</strong> <div class="small muted">${new Date(a.at).toLocaleString()}</div></div>`).join('') : 'No recent activity';
+  // update graph
+  updateGraph({
+    students: students.length,
+    recruiters: recruiters.length,
+    drives: drives.length,
+    resumes: resumes.length
+  });
+}
+/* -----------------------
+   Students CRUD
+   -----------------------*/
+function getStudents(){ return load(S.students, []); }
+function saveStudents(list){ save(S.students, list); renderStudents(); renderDashboard(); }
+function renderStudents(){
+  const tbody = document.getElementById('studentsTbody');
+  const q = document.getElementById('studentSearch').value.trim().toLowerCase();
+  const list = getStudents().filter(s => !q || s.name.toLowerCase().includes(q) || (s.email||'').toLowerCase().includes(q));
+  tbody.innerHTML = '';
+  if(list.length===0){ tbody.innerHTML = '<tr><td colspan="5" class="muted">No students</td></tr>'; return; }
+  list.forEach((s,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.email)}</td><td>${escapeHtml(s.course||'')}</td><td>${escapeHtml(s.year||'')}</td>
+      <td>
+        <button class="btn ghost" onclick="openStudentModal(${idx})">Edit</button>
+        <button class="btn" onclick="deleteStudent(${idx})">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function openStudentModal(idx){
+  const editing = (idx!==undefined);
+  const s = editing ? getStudents()[idx] : {name:'',email:'',course:'',year:''};
+  showModal(`<h3>${editing?'Edit':'Add'} Student</h3>
+    <div style="display:grid;gap:8px;margin-top:8px">
+      <input id="m_name" placeholder="Full name" class="input" value="${escapeHtml(s.name)}">
+      <input id="m_email" placeholder="Email" class="input" value="${escapeHtml(s.email)}">
+      <input id="m_course" placeholder="Course" class="input" value="${escapeHtml(s.course)}">
+      <input id="m_year" placeholder="Year" class="input" value="${escapeHtml(s.year)}">
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="submitStudent(${editing?idx:-1})">${editing? 'Save':'Add'}</button>
+        <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>`);
+}
+function submitStudent(idx){
+  const name = document.getElementById('m_name').value.trim();
+  const email = document.getElementById('m_email').value.trim();
+  const course = document.getElementById('m_course').value.trim();
+  const year = document.getElementById('m_year').value.trim();
+  if(!name || !email) return alert('Name & email required');
+  const list = getStudents();
+  if(idx===-1){
+    list.push({id:'s'+Date.now(),name,email,course,year});
+    addActivity(`Student added: ${name}`);
+    addNotif(`New student registered: ${name}`);
+  } else {
+    list[idx] = {...list[idx], name,email,course,year};
+    addActivity(`Student updated: ${name}`);
+  }
+  saveStudents(list); closeModal();
+}
+function deleteStudent(idx){
+  if(!confirm('Delete student?')) return;
+  const list = getStudents(); const removed = list.splice(idx,1)[0];
+  saveStudents(list); addActivity(`Student deleted: ${removed.name}`);
+}
+/* -----------------------
+   Recruiters CRUD
+   -----------------------*/
+function getRecruiters(){ return load(S.recruiters, []); }
+function saveRecruiters(list){ save(S.recruiters, list); renderRecruiters(); renderDashboard(); }
+function renderRecruiters(){
+  const tbody = document.getElementById('recruitersTbody');
+  const q = document.getElementById('recruiterSearch').value.trim().toLowerCase();
+  const list = getRecruiters().filter(r => !q || r.company.toLowerCase().includes(q));
+  tbody.innerHTML = '';
+  if(list.length===0){ tbody.innerHTML = '<tr><td colspan="4" class="muted">No recruiters</td></tr>'; return; }
+  list.forEach((r,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(r.company)}</td><td>${escapeHtml(r.contact)}</td><td>${escapeHtml(r.industry||'')}</td>
+      <td>
+        <button class="btn ghost" onclick="openRecruiterModal(${idx})">Edit</button>
+        <button class="btn" onclick="deleteRecruiter(${idx})">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function openRecruiterModal(idx){
+  const editing = (idx!==undefined);
+  const r = editing ? getRecruiters()[idx] : {company:'',contact:'',industry:''};
+  showModal(`<h3>${editing?'Edit':'Add'} Recruiter</h3>
+    <div style="display:grid;gap:8px;margin-top:8px">
+      <input id="c_company" placeholder="Company" class="input" value="${escapeHtml(r.company)}">
+      <input id="c_contact" placeholder="Contact email/phone" class="input" value="${escapeHtml(r.contact)}">
+      <input id="c_industry" placeholder="Industry" class="input" value="${escapeHtml(r.industry)}">
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="submitRecruiter(${editing?idx:-1})">${editing? 'Save':'Add'}</button>
+        <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>`);
+}
+function submitRecruiter(idx){
+  const company = document.getElementById('c_company').value.trim();
+  const contact = document.getElementById('c_contact').value.trim();
+  const industry = document.getElementById('c_industry').value.trim();
+  if(!company) return alert('Company required');
+  const list = getRecruiters();
+  if(idx===-1){
+    list.push({id:'c'+Date.now(),company,contact,industry});
+    addActivity(`Recruiter added: ${company}`);
+  } else {
+    list[idx] = {...list[idx], company,contact,industry};
+    addActivity(`Recruiter updated: ${company}`);
+  }
+  saveRecruiters(list); closeModal();
+}
+function deleteRecruiter(idx){
+  if(!confirm('Delete recruiter?')) return;
+  const list = getRecruiters(); const removed = list.splice(idx,1)[0];
+  saveRecruiters(list); addActivity(`Recruiter deleted: ${removed.company}`);
+}
+/* -----------------------
+   Drives CRUD
+   -----------------------*/
+function getDrives(){ return load(S.drives, []); }
+function saveDrives(list){ save(S.drives, list); renderDrivesAdmin(); renderDashboard(); }
+function renderDrivesAdmin(){
+  const tbody = document.getElementById('drivesTbody');
+  const q = document.getElementById('driveSearchAdmin').value.trim().toLowerCase();
+  const list = getDrives().filter(d => !q || d.company.toLowerCase().includes(q) || (d.role||'').toLowerCase().includes(q));
+  tbody.innerHTML = '';
+  if(list.length===0){ tbody.innerHTML = '<tr><td colspan="5" class="muted">No drives</td></tr>'; return; }
+  list.forEach((d,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(d.company)}</td><td>${escapeHtml(d.date)}</td><td>${escapeHtml(d.role)}</td><td>${escapeHtml(d.location)}</td>
+      <td>
+        <button class="btn ghost" onclick="openDriveModal(${idx})">Edit</button>
+        <button class="btn" onclick="deleteDrive(${idx})">Delete</button>
+        <button class="btn ghost" onclick="registerDriveAsAdmin(${idx})">Register (demo)</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function openDriveModal(idx){
+  const editing = (idx!==undefined);
+  const d = editing ? getDrives()[idx] : {company:'',date:'',role:'',location:''};
+  showModal(`<h3>${editing?'Edit':'Create'} Drive</h3>
+    <div style="display:grid;gap:8px;margin-top:8px">
+      <input id="d_company" placeholder="Company" class="input" value="${escapeHtml(d.company)}">
+      <input id="d_date" type="date" class="input" value="${escapeHtml(d.date)}">
+      <input id="d_role" placeholder="Role" class="input" value="${escapeHtml(d.role)}">
+      <input id="d_location" placeholder="Location" class="input" value="${escapeHtml(d.location)}">
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="submitDrive(${editing?idx:-1})">${editing? 'Save':'Create'}</button>
+        <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>`);
+}
+function submitDrive(idx){
+  const company = document.getElementById('d_company').value.trim();
+  const date = document.getElementById('d_date').value;
+  const role = document.getElementById('d_role').value.trim();
+  const location = document.getElementById('d_location').value.trim();
+  if(!company || !date) return alert('Company & date required');
+  const list = getDrives();
+  if(idx===-1){
+    list.push({id:'d'+Date.now(),company,date,role,location});
+    addActivity(`Drive created: ${company} (${date})`);
+    addNotif(`New drive: ${company} — ${date}`);
+  } else {
+    list[idx] = {...list[idx], company,date,role,location};
+    addActivity(`Drive updated: ${company}`);
+  }
+  saveDrives(list); closeModal();
+}
+function deleteDrive(idx){
+  if(!confirm('Delete drive?')) return;
+  const list = getDrives(); const r = list.splice(idx,1)[0];
+  saveDrives(list); addActivity(`Drive deleted: ${r.company}`);
+}
+function registerDriveAsAdmin(idx){
+  const d = getDrives()[idx];
+  if(!d) return;
+  const resumes = load(S.resumes, []);
+  resumes.unshift({id:'r'+Date.now(), student: 'Demo Student', fileName: `${d.company}-${d.role}-reg.txt`, uploadedAt:new Date().toISOString(), status:'Registered', comments:[], content:''});
+  save(S.resumes, resumes);
+  addActivity(`Admin registered demo student for ${d.company}`);
+  addNotif(`Admin registered demo student for ${d.company}`);
+  renderResumes();
+}
+/* -----------------------
+   Training modules
+   -----------------------*/
+function getModules(){ return load(S.modules, []); }
+function saveModules(list){ save(S.modules, list); renderModules(); }
+function renderModules(){
+  const wrap = document.getElementById('modulesWrap');
+  const list = getModules();
+  wrap.innerHTML = '';
+  if(list.length===0){ wrap.innerHTML = '<div class="card muted">No modules</div>'; return; }
+  list.forEach((m,idx)=>{
+    const div = document.createElement('div'); div.className='card';
+    div.innerHTML = `<h3>${escapeHtml(m.title)}</h3><div class="small">${escapeHtml(m.notes || '')}</div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn ghost" onclick='openModuleVideo("${escapeJs(m.video||'')}")'>Watch</button>
+        <button class="btn" onclick='downloadModuleNotes(${idx})'>Download Notes</button>
+        <button class="btn" onclick='deleteModule(${idx})'>Delete</button>
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+function openModuleModal(){
+  showModal(`<h3>Upload Module</h3>
+    <div style="display:grid;gap:8px;margin-top:8px">
+      <input id="mod_title" class="input" placeholder="Title">
+      <input id="mod_video" class="input" placeholder="YouTube embed URL (e.g. https://www.youtube.com/embed/ID)">
+      <textarea id="mod_notes" class="input" placeholder="Notes" style="min-height:80px"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="submitModule()">Upload</button>
+        <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>`);
+}
+function submitModule(){
+  const title = document.getElementById('mod_title').value.trim();
+  const video = document.getElementById('mod_video').value.trim();
+  const notes = document.getElementById('mod_notes').value.trim();
+  if(!title) return alert('Title required');
+  const list = getModules(); list.push({id:'m'+Date.now(),title,video,notes});
+  saveModules(list); addActivity(`Module uploaded: ${title}`); closeModal();
+}
+function downloadModuleNotes(idx){
+  const m = getModules()[idx]; if(!m) return;
+  const blob = new Blob([m.notes || 'Notes'], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${m.title}-notes.txt`; a.click(); URL.revokeObjectURL(url);
+}
+function deleteModule(idx){
+  if(!confirm('Delete module?')) return;
+  const list = getModules(); const removed = list.splice(idx,1)[0]; saveModules(list); addActivity(`Module removed: ${removed.title}`);
+}
+function openModuleVideo(url){
+  if(!url) return alert('No video URL');
+  const html = `<div style="position:relative;padding-top:56.25%"><iframe src="${url}" style="position:absolute;inset:0;width:100%;height:100%;border:0" allowfullscreen></iframe></div>`;
+  showModal(html);
+}
+/* -----------------------
+   Resume Review
+   -----------------------*/
+function getResumes(){ return load(S.resumes, []); }
+function saveResumes(list){ save(S.resumes, list); renderResumes(); renderDashboard(); }
+function renderResumes(){
+  const tbody = document.getElementById('resumesTbody');
+  const q = document.getElementById('resumeSearch').value.trim().toLowerCase();
+  const list = getResumes().filter(r => !q || (r.student||'').toLowerCase().includes(q) || (r.fileName||'').toLowerCase().includes(q));
+  tbody.innerHTML = '';
+  if(list.length===0){ tbody.innerHTML = '<tr><td colspan="5" class="muted">No resumes</td></tr>'; return; }
+  list.forEach((r,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(r.student||'—')}</td><td>${escapeHtml(r.fileName||'—')}</td><td>${new Date(r.uploadedAt||Date.now()).toLocaleString()}</td><td>${escapeHtml(r.status||'Pending')}</td>
+      <td>
+        <button class="btn ghost" onclick="viewResume(${idx})">View</button>
+        <button class="btn" onclick="approveResume(${idx})">Approve</button>
+        <button class="btn ghost" onclick="rejectResume(${idx})">Reject</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function viewResume(idx){
+  const r = getResumes()[idx];
+  if(!r) return;
+  let content = `<h3>${escapeHtml(r.fileName||'Resume')}</h3><div class="small muted">Uploaded: ${new Date(r.uploadedAt||Date.now()).toLocaleString()}</div><div style="margin-top:10px"><strong>Status:</strong> ${escapeHtml(r.status||'Pending')}</div>`;
+  content += `<div style="margin-top:10px"><strong>Comments:</strong>${(r.comments||[]).map(c=>'<div style="margin-top:6px"><em>'+escapeHtml(c.text)+'</em> — <span class="small muted">'+new Date(c.at).toLocaleString()+'</span></div>').join('') || '<div class="small muted">No comments</div>'}</div>`;
+  content += `<div style="margin-top:12px"><input id="rev_comment" class="input" placeholder="Add comment"><div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick="addResumeComment(${idx})">Add Comment</button><button class="btn ghost" onclick="closeModal()">Close</button></div></div>`;
+  if(r.content && r.content.startsWith('data:')) {
+    content += `<div style="margin-top:12px"><button class="btn ghost" onclick='openDataURL("${r.content}")'>Open File</button></div>`;
+  }
+  showModal(content);
+}
+function openDataURL(dataUrl){ const w = window.open('','_blank'); w.location.href = dataUrl; }
+function approveResume(idx){
+  const list = getResumes();
+  list[idx].status = 'Approved';
+  saveResumes(list); addActivity(`Resume approved: ${list[idx].fileName}`); addNotif(`Resume approved: ${list[idx].student||list[idx].fileName}`);
+}
+function rejectResume(idx){
+  const list = getResumes();
+  list[idx].status = 'Rejected';
+  saveResumes(list); addActivity(`Resume rejected: ${list[idx].fileName}`); addNotif(`Resume rejected: ${list[idx].student||list[idx].fileName}`);
+}
+function addResumeComment(idx){
+  const text = document.getElementById('rev_comment').value.trim();
+  if(!text) return alert('Enter comment');
+  const list = getResumes();
+  list[idx].comments = list[idx].comments || [];
+  list[idx].comments.unshift({text,at:new Date().toISOString()});
+  saveResumes(list);
+  viewResume(idx);
+}
+/* -----------------------
+   Admin profile
+   -----------------------*/
+function getAdmin(){ return load(S.admin, {name:'Admin', email:'admin@itmbu.ac.in', photo:''}); }
+function saveAdmin(a){ save(S.admin, a); renderAdminProfile(); addActivity('Admin profile saved'); }
+function renderAdminProfile(){
+  const a = getAdmin();
+  document.getElementById('admin_name').value = a.name || '';
+  document.getElementById('admin_email').value = a.email || '';
+  if(a.photo){ document.getElementById('adminPic').src = a.photo; document.getElementById('adminPic').style.display='block'; document.getElementById('adminNoPic').style.display='none'; } else { document.getElementById('adminPic').style.display='none'; document.getElementById('adminNoPic').style.display='block'; }
+}
+function saveAdminProfile(){
+  const a = getAdmin();
+  a.name = document.getElementById('admin_name').value.trim();
+  a.email = document.getElementById('admin_email').value.trim();
+  saveAdmin(a); alert('Saved');
+}
+function changeAdminPwd(){
+  const v = document.getElementById('admin_pwd').value;
+  if(!v) return alert('Enter password');
+  addActivity('Admin password changed (demo)');
+  alert('Password changed (demo)');
+  document.getElementById('admin_pwd').value='';
+}
+document.getElementById('admin_photo').addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader(); r.onload = ()=>{ const a = getAdmin(); a.photo = r.result; saveAdmin(a); }; r.readAsDataURL(f);
+});
+/* -----------------------
+   Utilities & small tools
+   -----------------------*/
+function openSampleData(){
+  if(!confirm('Seed demo sample data? This will overwrite current demo lists.')) return;
+  save(S.students, sampleStudents.slice());
+  save(S.recruiters, sampleRecruiters.slice());
+  save(S.drives, sampleDrives.slice());
+  save(S.modules, sampleModules.slice());
+  const demoRes = [
+    {id:'r1',student:'Jay Patel',fileName:'JayResume.pdf',uploadedAt:new Date().toISOString(),status:'Pending',content:''},
+    {id:'r2',student:'Riya Shah',fileName:'RiyaCV.docx',uploadedAt:new Date().toISOString(),status:'Pending',content:''}
+  ];
+  save(S.resumes, demoRes);
+  save(S.admin, {name:'Admin',email:'admin@itmbu.ac.in',photo:''});
+  save(S.notifs, [{text:'Welcome — demo data seeded',at:new Date().toISOString()}]);
+  save(S.activity, [{text:'Demo data added',at:new Date().toISOString()}]);
+  renderAll();
+  alert('Sample data seeded');
+}
+function renderAll(){ renderDashboard(); renderStudents(); renderRecruiters(); renderDrivesAdmin(); renderModules(); renderResumes(); renderAdminProfile(); }
+/* -----------------------
+   Excel Import (SheetJS)
+   - Accepts sheets named: students, recruiters, drives, modules, resumes, admin
+   - Each sheet should have header row; columns map to object fields
+   -----------------------*/
+document.getElementById('excelImport').addEventListener('change', async (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  try{
+    const data = await f.arrayBuffer();
+    const workbook = XLSX.read(data, {type:'array'});
+    const mapping = {
+      students: S.students,
+      recruiters: S.recruiters,
+      drives: S.drives,
+      modules: S.modules,
+      resumes: S.resumes,
+      admin: S.admin
+    };
+    let found = 0;
+    Object.keys(workbook.Sheets).forEach(sheetName=>{
+      const normalized = sheetName.trim();
+      const key = normalized.toLowerCase();
+      if(mapping[key]){
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet, {defval:''});
+        // if admin sheet, expect a single row; store first row as object
+        if(key === 'admin'){
+          const adminObj = json[0] || {};
+          save(mapping[key], adminObj);
+        } else {
+          // ensure each item has id; if missing, generate
+          const arr = json.map((row, i) => {
+            if(!row.id) row.id = (key[0]||'x') + Date.now() + '-' + i;
+            return row;
+          });
+          save(mapping[key], arr);
+        }
+        found++;
+      }
+    });
+    if(found===0) alert('No recognized sheets found. Please include sheets named: students, recruiters, drives, modules, resumes, admin (any subset).');
+    else {
+      renderAll();
+      alert('Import complete. ' + found + ' sheet(s) loaded.');
+      addActivity(`Excel import: ${found} sheet(s)`);
+    }
+  }catch(err){
+    console.error(err);
+    alert('Failed to import Excel: ' + (err.message || err));
+  } finally {
+    e.target.value = ''; // reset input
+  }
+});
+/* -----------------------
+   Graph (Chart.js)
+   -----------------------*/
+function updateGraph(counts){
+  // create canvas inside #chartWrap if not present
+  const wrap = document.getElementById('chartWrap');
+  let canvas = wrap.querySelector('canvas');
+  if(!canvas){
+    canvas = document.createElement('canvas');
+    canvas.id = 'dashboardChart';
+    canvas.style.maxWidth = '100%';
+    wrap.innerHTML = '';
+    wrap.appendChild(canvas);
+  }
+  const labels = ['Students','Recruiters','Drives','Resumes'];
+  const data = [counts.students||0, counts.recruiters||0, counts.drives||0, counts.resumes||0];
+  if(dashboardChart) {
+    dashboardChart.data.datasets[0].data = data;
+    dashboardChart.update();
+    return;
+  }
+  dashboardChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Counts',
+        data,
+        backgroundColor: [
+          'rgba(10,99,183,0.9)',
+          'rgba(8,75,140,0.85)',
+          'rgba(15,125,210,0.8)',
+          'rgba(0,95,170,0.8)'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero:true, ticks:{precision:0} }
+      }
+    }
+  });
+}
+/* -----------------------
+   Import guidance: quick helper to show expected structure (optional)
+   -----------------------*/
+function showImportGuidance(){
+  const html = `<h3>Excel Import Guidance</h3>
+    <p>Include any of these sheets (names shown): <strong>students, recruiters, drives, modules, resumes, admin</strong>.</p>
+    <p>Example columns per sheet:</p>
+    <ul>
+      <li><strong>students</strong>: id, name, email, course, year</li>
+      <li><strong>recruiters</strong>: id, company, contact, industry</li>
+      <li><strong>drives</strong>: id, company, date (YYYY-MM-DD), role, location</li>
+      <li><strong>modules</strong>: id, title, video (embed url), notes</li>
+      <li><strong>resumes</strong>: id, student, fileName, uploadedAt (ISO), status, content(optional data URL)</li>
+      <li><strong>admin</strong>: name, email, photo (data URL optional)</li>
+    </ul>
+    <p>Any subset of sheets is fine; importer will replace stored values for sheets found.</p>`;
+  showModal(html);
+}
+/* -----------------------
+   Utilities and init
+   -----------------------*/
+function escapeHtml(t){ return (t||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function escapeJs(t){ return (t||'').toString().replace(/"/g,'&quot;').replace(/'/g,"\\'"); }
+
+function init(){
+  if(!load(S.students)) save(S.students, []);
+  if(!load(S.recruiters)) save(S.recruiters, []);
+  if(!load(S.drives)) save(S.drives, []);
+  if(!load(S.modules)) save(S.modules, []);
+  if(!load(S.resumes)) save(S.resumes, []);
+  if(!load(S.admin)) save(S.admin, {name:'Admin', email:'admin@itmbu.ac.in', photo:''});
+  renderAll();
+}
+init();
+
+/* Expose a couple helpers used in HTML inline handlers */
+window.openSampleData = openSampleData;
+window.renderAll = renderAll;
+window.openDataURL = openDataURL;
+</script>
+</body>
+</html>

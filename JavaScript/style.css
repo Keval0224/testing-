@@ -1,0 +1,71 @@
+/* style.css - shared styles for all pages (consolidated from your code) */
+:root{
+  --itmbu-navy:#04294f;
+  --itmbu-blue:#0a63b7;
+  --itmbu-red:#d7263d;
+  --muted:#65707a;
+  --card-shadow:0 10px 30px rgba(2,12,37,0.08);
+  --glass: rgba(255,255,255,0.85);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif;}
+body{background:#f4f7fb;color:var(--itmbu-navy);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+
+/* Header / nav used across pages */
+.header{
+  display:flex;justify-content:space-between;align-items:center;padding:18px 24px;
+  background:linear-gradient(90deg,var(--itmbu-blue),#0b5bb7);color:#fff;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:48px;height:48px;border-radius:8px;background:#fff;padding:6px}
+.brand h1{font-size:18px;margin:0;font-weight:700}
+.site-nav a{margin-left:12px;padding:8px 12px;border-radius:8px;color:rgba(255,255,255,0.95);font-weight:600;background:rgba(255,255,255,0.06)}
+.site-nav a:hover{transform:translateY(-2px)}
+.site-nav .ghost{background:rgba(255,255,255,0.95);color:var(--itmbu-navy);padding:8px 12px;border-radius:10px}
+
+/* Slideshow */
+.slideshow{position:fixed;inset:0;height:100vh;width:100vw;z-index:-10;overflow:hidden;}
+.bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.55);opacity:0;transform:scale(1.08);transition:opacity 1.6s ease,transform 9s ease;}
+.bg-slide.active{opacity:1;transform:scale(1);}
+.bg-overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(4,41,79,0.28) 0%, rgba(4,41,79,0.36) 60%, rgba(0,0,0,0.2) 100%);z-index:-5;backdrop-filter:blur(2px)}
+
+/* Page slide sections (index uses these) */
+.section-slide{display:none;opacity:0;transition:opacity .6s ease;padding:90px 20px;position:relative;z-index:20;}
+.section-slide.active{display:block;opacity:1}
+
+/* Cards / sections used on many pages */
+.section{background:#fff;border-radius:14px;padding:22px;box-shadow:var(--card-shadow);max-width:1150px;margin:20px auto;}
+.section h2, .section h3{color:var(--itmbu-blue);margin-bottom:10px}
+.section p{color:var(--muted);line-height:1.6}
+
+/* Dashboard sidebar */
+.sidebar{width:250px;background:var(--itmbu-navy);height:100vh;position:fixed;left:0;top:0;padding:24px 14px;display:flex;flex-direction:column;gap:18px;color:#fff}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.logo img{width:48px;height:48px;background:#fff;padding:6px;border-radius:10px}
+.logo-name{color:#fff;font-weight:700}
+.sidebar a{display:block;color:#fff;padding:12px 14px;border-radius:10px;margin-bottom:6px;text-decoration:none;font-weight:600}
+.sidebar a:hover{background:#0a63b7}
+
+/* Main content when sidebar is present */
+.main{margin-left:270px;padding:26px}
+
+/* Forms */
+.form-box{max-width:420px;margin:40px auto;background:#fff;padding:26px;border-radius:12px;box-shadow:var(--card-shadow)}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #dbe6f2;margin-top:8px;margin-bottom:14px;font-size:14px}
+button{padding:12px 14px;border-radius:10px;border:none;background:var(--itmbu-blue);color:#fff;font-weight:700;cursor:pointer}
+
+/* Tables & cards */
+table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+th,td{padding:12px;border-bottom:1px solid #e5e9f0;text-align:left}
+th{background:var(--itmbu-blue);color:#fff}
+
+/* Utilities */
+.container{max-width:1150px;margin:0 auto;padding:18px}
+.hero-center{text-align:center;color:#fff;margin-top:18px}
+
+/* Responsive */
+@media(max-width:880px){
+  .sidebar{position:relative;width:100%;height:auto}
+  .main{margin-left:0;padding:16px}
+  .header{padding:12px}
+}

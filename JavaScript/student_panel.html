@@ -1,0 +1,844 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Student Portal — ITM SLS Baroda University</title>
+<style>
+  :root{
+    --accent:#0a63b7;
+    --muted:#65707a;
+    --bg:#f4f7fb;
+    --card:#fff;
+  }
+  *{box-sizing:border-box;font-family:Inter, system-ui, Arial, sans-serif}
+  body{margin:0;background:var(--bg);color:#0b2540}
+  
+  .app{
+    display:grid;
+    grid-template-columns:260px 1fr;
+    min-height:100vh;
+  }
+  .sidebar{
+    background:linear-gradient(180deg,var(--accent),#074f9a);
+    color:white;
+    padding:20px;
+    position:sticky;top:0;height:100vh;
+  }
+  .logo{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+  .logo img{width:52px;height:52px;border-radius:10px;background:#fff;padding:6px}
+  .logo h3{margin:0;font-size:16px}
+  .nav{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+  .nav button{
+    background:transparent;border:none;color:#eaf4ff;text-align:left;padding:10px;border-radius:10px;cursor:pointer;font-weight:600;
+  }
+  .nav button.active{background:rgba(255,255,255,0.08)}
+  
+  main{padding:18px 28px}
+  .dash-header{
+    display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:12px;background:linear-gradient(90deg,var(--accent),#0b5bb7);color:#fff;box-shadow:0 8px 28px rgba(2,12,37,0.08)
+  }
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:18px}
+  .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 12px 30px rgba(2,12,37,0.06)}
+  .small{font-size:13px;color:var(--muted)}
+  .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+  .btn.ghost{background:#eef6ff;color:var(--accent)}
+  
+  .page{display:none}
+  .page.active{display:block}
+  
+  .profile-grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+  .profile-pic{width:140px;height:140px;border-radius:12px;background:#eef6ff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .profile-pic img{width:100%;height:100%;object-fit:cover}
+  input[type="file"]{display:none}
+  label.file-btn{display:inline-block;padding:8px 12px;border-radius:8px;background:#eef6ff;color:var(--accent);cursor:pointer}
+  
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{padding:10px;border-bottom:1px solid #eef3fb;text-align:left}
+  th{background:#f6fbff;color:var(--accent);font-weight:700}
+  
+  .modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .module{padding:12px;border-radius:10px;background:#fff;border:1px solid #eef4fb}
+  
+  .resume-form{display:grid;gap:8px}
+  .row{display:flex;gap:8px}
+  .row .col{flex:1}
+  .template-list{display:flex;gap:10px;margin-top:8px}
+  .template{padding:10px;border-radius:8px;border:1px solid #e6eefb;cursor:pointer}
+  .template.active{outline:3px solid rgba(10,99,183,0.12)}
+  
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr}
+    .profile-grid{grid-template-columns:1fr}
+    .logo img{display:none}
+    .sidebar{position:relative;height:auto}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  
+  <aside class="sidebar" aria-label="Student navigation">
+    <div class="logo">
+      <img src="https://f2.leadsquaredcdn.com/t/itmbu1/content/common/images/itmbu_logo.png" alt="logo">
+      <div>
+        <h3>Student Portal</h3>
+        <div class="small">ITM SLS Baroda University</div>
+      </div>
+    </div>
+    <nav class="nav" role="navigation" aria-label="Main">
+      <button id="nav-dashboard" class="active" onclick="navTo('dashboard')">Dashboard</button>
+      <button id="nav-profile" onclick="navTo('profile')">My Profile</button>
+      <button id="nav-applied" onclick="navTo('applied')">Applied Companies</button>
+      <button id="nav-drives" onclick="navTo('drives')">Upcoming Drives</button>
+      <button id="nav-training" onclick="navTo('training')">Training Modules</button>
+      <button id="nav-resume" onclick="navTo('resume')">Resume Builder</button>
+      <button id="nav-logout" onclick="logout()" style="margin-top:12px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff;padding:9px;border-radius:8px">Logout</button>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="dashboard" class="page active" aria-labelledby="dash-heading">
+      <div class="dash-header">
+        <div>
+          <h2 id="dash-heading">Student Dashboard</h2>
+          <div class="small">Welcome back — manage your placements and training</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn" id="quick-apply">Quick Apply</button>
+          <button class="btn ghost" id="upload-resume-btn">Upload Resume</button>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><h3>Profile Completion</h3><div class="small">Complete your profile to increase recruiter matches</div></div>
+            <div style="text-align:right"><div id="profilePct" style="font-weight:800;font-size:20px">0%</div></div>
+          </div>
+          <div style="height:10px;background:#eef6ff;border-radius:8px;margin-top:12px;overflow:hidden">
+            <div id="profileBar" style="height:10px;background:linear-gradient(90deg,var(--accent),#0b5bb7);width:0%"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Your Applications</h3>
+          <div class="small" id="appliedCount">0 Open</div>
+          <div style="margin-top:12px"><a class="btn ghost" onclick="navTo('applied')">View Applications</a></div>
+        </div>
+
+        <div class="card">
+          <h3>Upcoming Drives</h3>
+          <div class="small">Next 30 days</div>
+          <ul id="miniDrives" style="margin-top:12px"></ul>
+        </div>
+
+        <div class="card">
+          <h3>Training</h3>
+          <div class="small">Modules completed</div>
+          <div style="margin-top:10px" id="trainingSummary">0/0 modules</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="profile" class="page" aria-labelledby="profile-heading">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 id="profile-heading">My Profile</h2>
+        <div class="small">Manage your profile details</div>
+      </div>
+
+      <div class="profile-grid">
+        <div>
+          <div class="card">
+            <h3>Personal Details</h3>
+            <div style="margin-top:8px" id="profileView">
+            
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <h3>Edit Profile</h3>
+            <form id="profileForm">
+              <div style="margin-bottom:8px">
+                <label class="small">Full name</label>
+                <input id="pf_name" type="text" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb">
+              </div>
+              <div style="margin-bottom:8px">
+                <label class="small">Email</label>
+                <input id="pf_email" type="email" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb">
+              </div>
+              <div style="margin-bottom:8px">
+                <label class="small">Phone</label>
+                <input id="pf_phone" type="text" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb">
+              </div>
+              <div style="margin-bottom:8px">
+                <label class="small">Skills (comma separated)</label>
+                <input id="pf_skills" type="text" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb">
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label class="file-btn small" title="Upload profile photo">Upload Photo
+                  <input id="pf_photo" type="file" accept="image/*">
+                </label>
+                <button type="button" class="btn" onclick="saveProfile()">Save</button>
+                <button type="button" class="btn ghost" onclick="resetProfile()">Reset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <aside>
+          <div class="card" style="text-align:center">
+            <div class="profile-pic" id="profilePicWrap">
+              <img id="profilePic" src="" alt="Profile photo" style="display:none">
+              <div id="profilePlaceholder" style="padding:8px;color:var(--accent)">No photo</div>
+            </div>
+            <div style="margin-top:12px">
+              <div style="font-weight:700" id="profileName">—</div>
+              <div class="small" id="profileEmail">—</div>
+              <div class="small" id="profilePhone">—</div>
+            </div>
+            <div style="margin-top:12px">
+              <button class="btn" onclick="navTo('applied')">View Applications</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="applied" class="page" aria-labelledby="applied-heading">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 id="applied-heading">Applied Companies</h2>
+        <div><button class="btn" onclick="openApplyModal()">Apply to Company</button></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label class="small">Sort</label>
+          <select id="appliedSort" onchange="renderApplied()">
+            <option value="latest">Latest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="company">By Company</option>
+          </select>
+        </div>
+
+        <table id="appliedTable" aria-label="Applied companies table">
+          <thead><tr><th>Company</th><th>Role</th><th>Applied On</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="drives" class="page" aria-labelledby="drives-heading">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 id="drives-heading">Upcoming Drives</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="driveSearch" placeholder="Search company..." style="padding:8px;border-radius:8px;border:1px solid #e6eefb">
+          <input id="driveDate" type="date" style="padding:8px;border-radius:8px;border:1px solid #e6eefb">
+          <button class="btn" onclick="renderDrives()">Search</button>
+          <button class="btn ghost" onclick="resetDrives()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <table id="drivesTable" aria-label="Upcoming drives table">
+          <thead><tr><th>Company</th><th>Date</th><th>Role</th><th>Location</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="training" class="page" aria-labelledby="training-heading">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 id="training-heading">Training Modules</h2>
+        <div class="small">Mark modules complete to track progress</div>
+      </div>
+
+      <div class="modules-grid" id="modulesGrid">
+        
+      </div>
+
+      <div style="margin-top:16px" class="card">
+        <h3>Your Progress</h3>
+        <div id="moduleProgress">0 / 0 completed</div>
+      </div>
+    </section>
+
+    <section id="resume" class="page" aria-labelledby="resume-heading">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 id="resume-heading">Resume Builder</h2>
+        <div class="small">Choose a template, save, upload previous resumes or download as PDF</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:16px">
+        <div class="card">
+          <form id="resumeForm" class="resume-form" onsubmit="event.preventDefault()">
+            <div class="row">
+              <div class="col"><input id="res_name" placeholder="Full name" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb"></div>
+              <div class="col"><input id="res_email" placeholder="Email" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eefb"></div>
+            </div>
+            <input id="res_phone" placeholder="Phone" style="padding:10px;border-radius:8px;border:1px solid #e6eefb">
+            <input id="res_summary" placeholder="Professional summary" style="padding:10px;border-radius:8px;border:1px solid #e6eefb">
+            <label class="small">Skills (comma separated)</label>
+            <input id="res_skills" placeholder="e.g. JavaScript, SQL, Communication" style="padding:10px;border-radius:8px;border:1px solid #e6eefb">
+            <div style="margin-top:8px">
+              <label class="small">Choose template</label>
+              <div class="template-list">
+                <div class="template active" data-tmpl="1" onclick="pickTemplate(1)">Professional</div>
+                <div class="template" data-tmpl="2" onclick="pickTemplate(2)">Simple</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn" onclick="saveResume()">Save</button>
+              <button class="btn ghost" onclick="previewResume()">Preview</button>
+              <button class="btn" onclick="downloadResume()">Download PDF</button>
+            </div>
+          </form>
+        </div>
+
+        <aside>
+          <div class="card">
+            <h3>Upload Previous Resume</h3>
+            <input id="resumeUpload" type="file" accept=".pdf,.doc,.docx" style="display:none">
+            <label for="resumeUpload" class="file-btn small" onclick="document.getElementById('resumeUpload').click()">Choose File</label>
+            <div id="uploadedResumeName" class="small" style="margin-top:8px">No file uploaded</div>
+            <div style="margin-top:10px">
+              <button class="btn ghost" onclick="viewUploadedResume()">View</button>
+              <button class="btn" onclick="removeUploadedResume()">Remove</button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <h3>Saved Resumes</h3>
+            <div id="savedResumeList"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:50">
+  <div style="width:90%;max-width:900px;background:white;border-radius:10px;overflow:auto;max-height:88vh;padding:16px;position:relative">
+    <button onclick="closeModal()" style="position:absolute;right:12px;top:12px;border:none;background:#eee;padding:8px;border-radius:8px;cursor:pointer">Close</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+
+const STORAGE = {
+  profile: 'itmbu_profile_v1',
+  applied: 'itmbu_applied_v1',
+  drives: 'itmbu_drives_v1',
+  modules: 'itmbu_modules_v1',
+  resumes: 'itmbu_resumes_v1',
+  uploadedResume: 'itmbu_uploaded_resume_v1'
+};
+const sampleDrives = [
+  {id:'d1', company:'TCS', date:'2025-12-02', role:'Software Dev', location:'On-Campus'},
+  {id:'d2', company:'Infosys', date:'2025-12-06', role:'System Engineer', location:'Hybrid'},
+  {id:'d3', company:'HDFC', date:'2025-12-10', role:'Business Analyst', location:'On-Campus'},
+  {id:'d4', company:'Amazon', date:'2025-12-15', role:'SDE-I', location:'Virtual'},
+];
+const defaultModules = [
+  {id:'m1', title:'Aptitude & Logical Reasoning', video:'https://www.youtube.com/embed/1u0kQGVdYQ4', notes:'Aptitude notes sample'},
+  {id:'m2', title:'Communication & Soft Skills', video:'https://www.youtube.com/embed/3Yl8dS6t5k4', notes:'Soft skills notes sample'},
+  {id:'m3', title:'Coding Basics (JS)', video:'https://www.youtube.com/embed/hdI2bqOjy3c', notes:'Coding notes sample'},
+  {id:'m4', title:'Resume & Interview Prep', video:'https://www.youtube.com/embed/9e0y6Y2gO9w', notes:'Resume notes sample'},
+];
+
+function load(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : (fallback===undefined?null:fallback);
+  } catch(e){ return fallback; }
+}
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+function navTo(pageId){
+  
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('nav-'+pageId);
+  if(btn) btn.classList.add('active');
+  // show page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  // run page-specific renderers
+  if(pageId === 'dashboard') renderDashboard();
+  if(pageId === 'profile') renderProfile();
+  if(pageId === 'applied') renderApplied();
+  if(pageId === 'drives') renderDrives();
+  if(pageId === 'training') renderModules();
+  if(pageId === 'resume') renderSavedResumes();
+}
+
+
+function defaultProfile(){
+  return {name:'', email:'', phone:'', skills:'', photoData:''};
+}
+function renderProfile(){
+  const p = load(STORAGE.profile, defaultProfile());
+  
+  const view = document.getElementById('profileView');
+  view.innerHTML = `
+    <p><strong>Name:</strong> ${p.name || '—'}</p>
+    <p><strong>Email:</strong> ${p.email || '—'}</p>
+    <p><strong>Phone:</strong> ${p.phone || '—'}</p>
+    <p><strong>Skills:</strong> ${p.skills || '—'}</p>
+  `;
+  
+  document.getElementById('pf_name').value = p.name;
+  document.getElementById('pf_email').value = p.email;
+  document.getElementById('pf_phone').value = p.phone;
+  document.getElementById('pf_skills').value = p.skills;
+  
+  if(p.photoData){
+    const img = document.getElementById('profilePic');
+    img.src = p.photoData;
+    img.style.display = 'block';
+    document.getElementById('profilePlaceholder').style.display='none';
+  } else {
+    document.getElementById('profilePic').style.display = 'none';
+    document.getElementById('profilePlaceholder').style.display='block';
+  }
+  document.getElementById('profileName').textContent = p.name || '—';
+  document.getElementById('profileEmail').textContent = p.email || '—';
+  document.getElementById('profilePhone').textContent = p.phone || '—';
+  updateProfileCompletion();
+}
+function saveProfile(){
+  const p = {
+    name: document.getElementById('pf_name').value.trim(),
+    email: document.getElementById('pf_email').value.trim(),
+    phone: document.getElementById('pf_phone').value.trim(),
+    skills: document.getElementById('pf_skills').value.trim(),
+    photoData: load(STORAGE.profile, defaultProfile()).photoData || ''
+  };
+  
+  const fileInput = document.getElementById('pf_photo');
+  if(fileInput.files && fileInput.files[0]){
+    const f = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      p.photoData = reader.result;
+      save(STORAGE.profile, p);
+      renderProfile();
+      alert('Profile saved.');
+    };
+    reader.readAsDataURL(f);
+  } else {
+    save(STORAGE.profile, p);
+    renderProfile();
+    alert('Profile saved.');
+  }
+}
+function resetProfile(){
+  if(confirm('Reset profile to empty?')) {
+    save(STORAGE.profile, defaultProfile());
+    renderProfile();
+  }
+}
+document.getElementById('pf_photo').addEventListener('change', ()=> {
+});
+
+function updateProfileCompletion(){
+  const p = load(STORAGE.profile, defaultProfile());
+  let score = 0;
+  if(p.name) score += 30;
+  if(p.email) score += 25;
+  if(p.phone) score += 20;
+  if(p.skills) score += 15;
+  if(p.photoData) score += 10;
+  if(score>100) score = 100;
+  document.getElementById('profilePct').textContent = score + '%';
+  document.getElementById('profileBar').style.width = score + '%';
+}
+
+function getApplied(){ return load(STORAGE.applied, []); }
+function saveApplied(list){ save(STORAGE.applied, list); renderApplied(); renderDashboard(); }
+
+function renderApplied(){
+  const tbody = document.querySelector('#appliedTable tbody');
+  const list = getApplied().slice(); // clone
+  const sort = document.getElementById('appliedSort').value;
+  if(sort === 'latest') list.sort((a,b)=> new Date(b.appliedOn) - new Date(a.appliedOn));
+  if(sort === 'oldest') list.sort((a,b)=> new Date(a.appliedOn) - new Date(b.appliedOn));
+  if(sort === 'company') list.sort((a,b)=> a.company.localeCompare(b.company));
+  tbody.innerHTML = '';
+  list.forEach((app, idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${app.company}</td><td>${app.role}</td><td>${app.appliedOn}</td><td>${app.status}</td>
+      <td>
+        <button class="btn ghost" onclick="viewApplication(${idx})">View</button>
+        <button class="btn" onclick="cancelApplication(${idx})">Cancel</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('appliedCount').textContent = `${list.length} Open`;
+}
+
+function openApplyModal(){
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `<h3>Apply to Company</h3>
+    <div style="display:grid;gap:8px">
+      <input id="apply_company" placeholder="Company name" style="padding:8px;border-radius:6px;border:1px solid #e6eefb">
+      <input id="apply_role" placeholder="Role" style="padding:8px;border-radius:6px;border:1px solid #e6eefb">
+      <button class="btn" onclick="submitManualApply()">Apply</button>
+    </div>`;
+  showModal();
+}
+function submitManualApply(){
+  const c = document.getElementById('apply_company').value.trim();
+  const r = document.getElementById('apply_role').value.trim();
+  if(!c || !r){ alert('Enter company and role'); return;}
+  const apps = getApplied();
+  apps.push({company:c,role:r,appliedOn:new Date().toISOString().slice(0,10),status:'Applied'});
+  saveApplied(apps);
+  closeModal();
+  alert('Applied to '+c);
+}
+function viewApplication(index){
+  const apps = getApplied();
+  const app = apps[index];
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `<h3>${app.company} — ${app.role}</h3>
+    <p><strong>Applied On:</strong> ${app.appliedOn}</p>
+    <p><strong>Status:</strong> ${app.status}</p>
+    <div style="margin-top:10px"><button class="btn" onclick="closeModal()">Close</button></div>`;
+  showModal();
+}
+function cancelApplication(index){
+  if(!confirm('Cancel this application?')) return;
+  const apps = getApplied();
+  apps.splice(index,1);
+  saveApplied(apps);
+}
+
+function getDrives(){ return load(STORAGE.drives, sampleDrives); }
+function saveDrives(list){ save(STORAGE.drives, list); }
+
+function renderDrives(){
+  const tbody = document.querySelector('#drivesTable tbody');
+  const q = document.getElementById('driveSearch').value.trim().toLowerCase();
+  const byDate = document.getElementById('driveDate').value;
+  const drives = getDrives().filter(d=>{
+    if(q && !d.company.toLowerCase().includes(q)) return false;
+    if(byDate && d.date !== byDate) return false;
+    return true;
+  });
+  tbody.innerHTML = '';
+  drives.forEach(d=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${d.company}</td><td>${d.date}</td><td>${d.role}</td><td>${d.location}</td>
+      <td><button class="btn" onclick="registerDrive('${d.id}')">Register</button></td>`;
+    tbody.appendChild(tr);
+  });
+  const mini = document.getElementById('miniDrives');
+  mini.innerHTML = '';
+  drives.slice(0,5).forEach(d=>{
+    const li = document.createElement('li');
+    li.textContent = `${d.company} — ${d.date}`;
+    mini.appendChild(li);
+  });
+}
+function resetDrives(){
+  document.getElementById('driveSearch').value='';
+  document.getElementById('driveDate').value='';
+  renderDrives();
+}
+function registerDrive(id){
+  const drives = getDrives();
+  const d = drives.find(x=>x.id===id);
+  if(!d) return alert('Drive not found');
+  
+  const apps = getApplied();
+  
+  if(apps.some(a=>a.company===d.company && a.role===d.role)) {
+    alert('Already applied/registered');
+    return;
+  }
+  apps.push({company:d.company,role:d.role,appliedOn:new Date().toISOString().slice(0,10),status:'Registered'});
+  saveApplied(apps);
+  alert('Registered for '+d.company);
+}
+
+function getModules(){ return load(STORAGE.modules, defaultModules.map(m=>({...m, completed:false}))); }
+function saveModules(list){ save(STORAGE.modules, list); renderModules(); renderDashboard(); }
+
+function renderModules(){
+  const grid = document.getElementById('modulesGrid');
+  const modules = getModules();
+  grid.innerHTML = '';
+  modules.forEach(mod=>{
+    const div = document.createElement('div');
+    div.className='module';
+    div.innerHTML = `<h4>${mod.title}</h4>
+      <div class="small">Notes & Video</div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn ghost" onclick='openVideo("${mod.video}")'>Watch</button>
+        <button class="btn" onclick='downloadNotes("${mod.id}")'>Download Notes</button>
+        <button class="btn ${mod.completed? "ghost": ""}" onclick='toggleModule("${mod.id}")'>${mod.completed? "Completed":"Mark Complete"}</button>
+      </div>`;
+    grid.appendChild(div);
+  });
+  updateModuleProgress();
+}
+function openVideo(url){
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `<div style="position:relative;padding-top:56.25%"><iframe src="${url}" style="position:absolute;inset:0;width:100%;height:100%;border:0" allowfullscreen></iframe></div>`;
+  showModal();
+}
+function downloadNotes(id){
+  const modules = getModules();
+  const m = modules.find(x=>x.id===id);
+  if(!m) return;
+  // create a simple text file and trigger download (sample)
+  const blob = new Blob([m.notes || "Notes content"], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${m.title}-notes.txt`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function toggleModule(id){
+  const modules = getModules();
+  const idx = modules.findIndex(m=>m.id===id);
+  if(idx===-1) return;
+  modules[idx].completed = !modules[idx].completed;
+  saveModules(modules);
+}
+function updateModuleProgress(){
+  const modules = getModules();
+  const completed = modules.filter(m=>m.completed).length;
+  document.getElementById('moduleProgress').textContent = `${completed} / ${modules.length} completed`;
+  document.getElementById('trainingSummary').textContent = `${completed}/${modules.length} modules`;
+}
+
+let chosenTemplate = 1;
+function pickTemplate(n){
+  chosenTemplate = n;
+  document.querySelectorAll('.template').forEach(el=>el.classList.remove('active'));
+  document.querySelector(`.template[data-tmpl="${n}"]`).classList.add('active');
+}
+function saveResume(){
+  const resume = {
+    name: document.getElementById('res_name').value.trim(),
+    email: document.getElementById('res_email').value.trim(),
+    phone: document.getElementById('res_phone').value.trim(),
+    summary: document.getElementById('res_summary').value.trim(),
+    skills: document.getElementById('res_skills').value.trim(),
+    template: chosenTemplate,
+    savedAt: new Date().toISOString()
+  };
+  const list = load(STORAGE.resumes, []);
+  list.unshift(resume);
+  save(STORAGE.resumes, list);
+  renderSavedResumes();
+  alert('Resume saved.');
+}
+function renderSavedResumes(){
+  const container = document.getElementById('savedResumeList');
+  const list = load(STORAGE.resumes, []);
+  container.innerHTML = '';
+  if(list.length===0){ container.innerHTML = '<div class="small">No saved resumes</div>'; return; }
+  list.forEach((r,idx)=>{
+    const div = document.createElement('div');
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+      <div>
+        <div style="font-weight:700">${r.name || 'Unnamed'}</div>
+        <div class="small">${new Date(r.savedAt).toLocaleString()}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn ghost" onclick="previewSaved(${idx})">Preview</button>
+        <button class="btn" onclick="downloadSaved(${idx})">Download</button>
+      </div>
+    </div>`;
+    container.appendChild(div);
+  });
+}
+function previewSaved(idx){
+  const list = load(STORAGE.resumes, []);
+  const r = list[idx];
+  if(!r) return;
+  openResumePreview(r);
+}
+function downloadSaved(idx){
+  const list = load(STORAGE.resumes, []);
+  const r = list[idx];
+  if(!r) return;
+  openResumePreview(r, true); 
+}
+function previewResume(){
+  const r = {
+    name: document.getElementById('res_name').value.trim(),
+    email: document.getElementById('res_email').value.trim(),
+    phone: document.getElementById('res_phone').value.trim(),
+    summary: document.getElementById('res_summary').value.trim(),
+    skills: document.getElementById('res_skills').value.trim(),
+    template: chosenTemplate
+  };
+  openResumePreview(r);
+}
+function openResumePreview(r, autoPrint=false){
+  // build html for resume based on template
+  const html = buildResumeHTML(r);
+  document.getElementById('modalContent').innerHTML = html;
+  showModal();
+  if(autoPrint){
+    // delay to allow modal to render then open print in new window
+    setTimeout(()=> {
+      // open in new window to print
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(()=>{ w.print(); }, 400);
+    }, 300);
+  }
+}
+function buildResumeHTML(r){
+  const skills = (r.skills || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const template1 = `
+    <div style="font-family:Arial;color:#082b57;padding:20px">
+      <h1 style="margin-bottom:4px">${r.name || ''}</h1>
+      <div style="color:#375b8a">${r.email || ''} • ${r.phone || ''}</div>
+      <hr style="margin:12px 0;border:none;border-top:2px solid #eef4fb" />
+      <h3>Profile</h3><p>${r.summary || ''}</p>
+      <h3>Skills</h3>
+      <ul>${skills.map(s=>`<li>${s}</li>`).join('')}</ul>
+    </div>`;
+  const template2 = `
+    <div style="font-family:Arial;color:#0b3b66;padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 style="margin:0">${r.name || ''}</h2>
+        <div style="text-align:right">${r.email || ''}<br>${r.phone || ''}</div>
+      </div>
+      <hr style="margin:12px 0;border:none;border-top:1px dashed #e6f0ff" />
+      <h4>Summary</h4><p>${r.summary || ''}</p>
+      <h4>Skills</h4><p>${skills.join(', ')}</p>
+    </div>`;
+  return (r.template === 2) ? template2 : template1;
+}
+function downloadResume(){
+  // preview then open print window for saving as PDF
+  const r = {
+    name: document.getElementById('res_name').value.trim(),
+    email: document.getElementById('res_email').value.trim(),
+    phone: document.getElementById('res_phone').value.trim(),
+    summary: document.getElementById('res_summary').value.trim(),
+    skills: document.getElementById('res_skills').value.trim(),
+    template: chosenTemplate
+  };
+  openResumePreview(r, true);
+}
+
+/* upload previous resume and view */
+document.getElementById('resumeUpload').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const data = {name:f.name,type:f.type,content:reader.result,uploadedAt:new Date().toISOString()};
+    save(STORAGE.uploadedResume, data);
+    document.getElementById('uploadedResumeName').textContent = f.name;
+    alert('Resume uploaded (stored locally). Use View to open in new tab.');
+  };
+  reader.readAsDataURL(f);
+});
+function viewUploadedResume(){
+  const data = load(STORAGE.uploadedResume, null);
+  if(!data) return alert('No uploaded resume found.');
+  const w = window.open('', '_blank');
+  // if pdf or docx, open data url
+  w.location.href = data.content;
+}
+function removeUploadedResume(){
+  if(confirm('Remove uploaded resume?')) {
+    localStorage.removeItem(STORAGE.uploadedResume);
+    document.getElementById('uploadedResumeName').textContent = 'No file uploaded';
+  }
+}
+
+/* -------------------------
+   Modal helpers
+   -------------------------*/
+function showModal(){
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal(){
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('modalContent').innerHTML = '';
+}
+
+/* -------------------------
+   Dashboard render
+   -------------------------*/
+function renderDashboard(){
+  // applied count
+  const applied = getApplied();
+  document.getElementById('appliedCount').textContent = `${applied.length} Open`;
+  // mini drives (first 3)
+  const drives = getDrives();
+  const mini = document.getElementById('miniDrives');
+  mini.innerHTML = '';
+  drives.slice(0,3).forEach(d=>{
+    const li = document.createElement('li'); li.textContent = `${d.company} — ${d.date}`; mini.appendChild(li);
+  });
+  // training summary
+  updateModuleProgress();
+  // profile pct:
+  updateProfileCompletion();
+}
+
+/* -------------------------
+   Page initialisation
+   -------------------------*/
+function init(){
+  // ensure drives/modules exist in storage
+  if(!load(STORAGE.drives)) save(STORAGE.drives, sampleDrives);
+  if(!load(STORAGE.modules)) save(STORAGE.modules, defaultModules.map(m=>({...m, completed:false})));
+  // render initial stuff
+  renderDashboard();
+  renderDrives();
+  renderModules();
+  renderApplied();
+  renderProfile();
+  renderSavedResumes();
+  // uploaded resume name display
+  const up = load(STORAGE.uploadedResume, null);
+  if(up) document.getElementById('uploadedResumeName').textContent = up.name;
+}
+init();
+
+/* -------------------------
+   Quick apply & logout
+   -------------------------*/
+document.getElementById('quick-apply').addEventListener('click', ()=>{
+  // quick apply demo: opens applies modal with last drive company prefilled
+  const drives = getDrives();
+  if(drives.length===0) return alert('No drives available to quick apply');
+  const last = drives[0];
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `<h3>Quick Apply — ${last.company}</h3>
+    <p>Role: ${last.role}</p>
+    <div style="display:flex;gap:8px"><button class="btn" onclick="registerDrive('${last.id}');closeModal();">Register</button>
+    <button class="btn ghost" onclick="closeModal()">Cancel</button></div>`;
+  showModal();
+});
+
+function logout(){
+  if(confirm('Logout (demo)?')) {
+    // for demo, just go to dashboard and clear some UI
+    alert('Logged out (demo). You will be returned to Dashboard.');
+    navTo('dashboard');
+  }
+}
+
+/* -------------------------
+   small helpers for demo
+   -------------------------*/
+window.viewUploadedResume = window.viewUploadedResume;
+window.openApplyModal = openApplyModal;
+</script>
+</body>
+</html>

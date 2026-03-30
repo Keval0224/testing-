@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Placement Portal — Home</title>
+
+  <style>
+    :root{
+      --accent:red;
+      --accent-2:red;
+      --muted:#65707a;
+      --bg:red;
+      --card-bg:#ffffff;
+      --glass: rgba(255,255,255,0.08);
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    html,body{height:100%;margin:0;background: linear-gradient(180deg,red 0%, red 50%, red 100%); color:red;}
+
+    .hero {
+      min-height:100vh;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:36px;
+      overflow:hidden;
+    }
+
+    .blob {
+      position:absolute;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.35;
+      animation: float 12s infinite ease-in-out;
+      mix-blend-mode: screen;
+    }
+    .blob.a{ width:520px;height:520px; background: linear-gradient(135deg,#0a63b7,#0b7dd1); left:-5%; top:-10%; animation-duration:14s; }
+    .blob.b{ width:420px;height:420px; background: linear-gradient(135deg,#0b5bb7,#0a63b7); right:-10%; bottom:-10%; animation-duration:16s; }
+
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0) scale(1); }
+      50% { transform: translateY(-30px) translateX(20px) scale(1.05); }
+      100% { transform: translateY(0) translateX(0) scale(1); }
+    }
+
+    .panel {
+      position:relative;
+      width:100%;
+      max-width:980px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));
+      border-radius:14px;
+      box-shadow: 0 20px 60px rgba(2,12,37,0.45);
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      overflow:hidden;
+      z-index:10;
+      animation: pop 420ms ease;
+    }
+
+    @keyframes pop { from { transform: scale(.98); opacity:0 } to { transform:scale(1); opacity:1 } }
+
+    .panel-left {
+      padding:36px;
+      background:
+        linear-gradient(180deg, rgba(10,99,183,0.06), rgba(255,255,255,0.02));
+      display:flex;flex-direction:column;gap:12px;justify-content:center;
+    }
+
+    .logo { display:flex;align-items:center;gap:12px; }
+    .logo img{width:64px;height:64px;border-radius:10px;background:#fff;padding:6px}
+    .brand { font-weight:800; color:var(--accent); font-size:18px; }
+    .hero-title { font-size:26px; font-weight:800; margin-top:6px; color:#07203b }
+    .hero-sub { color:var(--muted); margin-top:8px; max-width:520px; }
+
+    .features { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap }
+    .feat { background:#fff;border-radius:10px;padding:12px 14px; box-shadow:0 8px 20px rgba(2,12,37,0.06); min-width:150px }
+    .feat h4{margin:0;font-size:14px;color:var(--accent)}
+    .feat p{margin:6px 0 0 0; font-size:13px;color:var(--muted)}
+
+    .panel-right {
+      padding:28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.98));
+      border-left: 1px solid rgba(10,99,183,0.06);
+    }
+
+    .switch {
+      display:flex;gap:8px;margin-bottom:18px;
+      justify-content:space-between;align-items:center;
+    }
+    .role-tabs { display:flex; gap:8px; }
+    .tab {
+      padding:8px 12px;border-radius:10px;border:1px solid rgba(10,99,183,0.06);
+      cursor:pointer;font-weight:700;background:transparent;color:var(--accent);
+    }
+    .tab.active { background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff; }
+
+    .auth-card { display:grid; gap:10px; }
+    .auth-card label{font-size:13px;color:#27384f;font-weight:700}
+    .input { padding:12px;border-radius:10px;border:1px solid #e6eefb;font-size:14px; width:100%; }
+    .btn {
+      padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:800;
+      background: linear-gradient(90deg,var(--accent),var(--accent-2)); color:#fff;
+    }
+    .btn.secondary { background:#eef6ff; color:var(--accent); border:1px solid rgba(10,99,183,0.06); }
+
+    .toast {
+      position:fixed; left:50%; transform:translateX(-50%); bottom:28px; z-index:60;
+      background:#07203b;color:#fff;padding:10px 16px;border-radius:10px;
+      display:none; font-weight:700;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="hero">
+    <div class="blob a"></div>
+    <div class="blob b"></div>
+
+    <div class="panel">
+
+      <div class="panel-left">
+        <div class="logo">
+          <img src="https://f2.leadsquaredcdn.com/t/itmbu1/content/common/images/itmbu_logo.png" alt="ITM logo">
+          <div>
+            <div class="brand">ITM SLS — Student Placement Portal</div>
+            <div class="muted" style="font-weight:700">Trusted — Industry Connections</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="hero-title">Welcome — manage placements, training & resumes</div>
+          <div class="hero-sub">Sign in as Student, Admin or Recruiter. Uses localStorage for demo purposes.</div>
+        </div>
+
+        <div class="features">
+          <div class="feat"><h4>Upcoming Drives</h4><p class="muted">Search & register</p></div>
+          <div class="feat"><h4>Resume Builder</h4><p class="muted">Create / Download</p></div>
+          <div class="feat"><h4>Training</h4><p class="muted">Watch modules</p></div>
+        </div>
+      </div>
+
+      <div class="panel-right">
+
+        <div class="switch">
+          <div class="role-tabs">
+            <button class="tab" id="tab-student" onclick="selectRole('student')">Student</button>
+            <button class="tab" id="tab-admin" onclick="selectRole('admin')">Admin</button>
+            <button class="tab" id="tab-recruiter" onclick="selectRole('recruiter')">Recruiter</button>
+          </div>
+          <div class="muted">Already have an account? <span class="small-link" onclick="showPanel('login')" style="cursor:pointer;font-weight:700">Login</span></div>
+        </div>
+
+        <div id="loginPanel" class="auth-card">
+          <label id="authTitle">Student Login</label>
+          <input id="email" class="input" type="email" placeholder="Email" />
+          <input id="password" class="input" type="password" placeholder="Password" />
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn" onclick="doLogin()">Login</button>
+            <button class="btn secondary" onclick="showPanel('signup')">Signup</button>
+          </div>
+        </div>
+
+        <div id="signupPanel" class="auth-card" style="display:none">
+          <label id="signupTitle">Student Signup</label>
+          <input id="su_name" class="input" type="text" placeholder="Full name" />
+          <div style="display:flex;gap:8px">
+            <input id="su_email" class="input" type="email" placeholder="Email" />
+            <input id="su_phone" class="input" type="text" placeholder="Phone (optional)" />
+          </div>
+          <input id="su_password" class="input" type="password" placeholder="Create password (min 6 chars)" />
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn" onclick="doSignup()">Create Account</button>
+            <button class="btn secondary" onclick="showPanel('login')">Back</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Full Updated JS -->
+  <script>
+
+const KEY_STUDENTS   = 'itmbu_students_v1';
+const KEY_ADMINS     = 'itmbu_admins_v1';
+const KEY_RECRUITERS = 'itmbu_recruiters_v1';
+
+function load(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
+function save(key, arr){ localStorage.setItem(key, JSON.stringify(arr || [])); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{t.style.display='none';},2000); }
+
+(function seedAdmin(){
+  const admins = load(KEY_ADMINS);
+  if(admins.length===0){
+    admins.push({ id:'a1', name:'Admin Demo', email:'admin@itmbu.ac.in', password:'admin123' });
+    save(KEY_ADMINS, admins);
+  }
+})();
+
+let currentRole = 'student';
+
+function selectRole(role){
+  currentRole = role;
+
+  document.getElementById('tab-student').classList.toggle('active', role==='student');
+  document.getElementById('tab-admin').classList.toggle('active', role==='admin');
+  document.getElementById('tab-recruiter').classList.toggle('active', role==='recruiter');
+
+  let label = role.charAt(0).toUpperCase() + role.slice(1);
+  document.getElementById('authTitle').textContent   = `${label} Login`;
+  document.getElementById('signupTitle').textContent = `${label} Signup`;
+}
+
+function showPanel(p){
+  document.getElementById('loginPanel').style.display  = p==='login'?'grid':'none';
+  document.getElementById('signupPanel').style.display = p==='signup'?'grid':'none';
+}
+
+function doSignup(){
+  const name = su_name.value.trim();
+  const email = su_email.value.trim().toLowerCase();
+  const phone = su_phone.value.trim();
+  const pass = su_password.value;
+
+  if(!name || !email || !pass) return toast("Please fill all fields");
+  if(pass.length<6) return toast("Password must be 6+ chars");
+
+  let key = currentRole==='student'?KEY_STUDENTS : currentRole==='admin'?KEY_ADMINS : KEY_RECRUITERS;
+
+  let arr = load(key);
+  if(arr.some(u=>u.email===email)) return toast("Email already exists");
+
+  arr.push({ id:currentRole[0]+Date.now(), name, email, phone, password:pass });
+  save(key, arr);
+
+  toast(`${currentRole} registered!`);
+  showPanel('login');
+}
+
+function doLogin(){
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const pass = document.getElementById('password').value;
+
+  if(!email || !pass) return toast("Enter email & password");
+
+  let key, redirect;
+  if(currentRole==='student'){ key=KEY_STUDENTS; redirect='student_panel.html'; }
+  if(currentRole==='admin'){ key=KEY_ADMINS; redirect='admin_panel.html'; }
+  if(currentRole==='recruiter'){ key=KEY_RECRUITERS; redirect='recruiter.html'; }
+
+  let list = load(key);
+  let u = list.find(x=>x.email===email && x.password===pass);
+
+  if(!u) return toast("Invalid credentials");
+
+  toast("Login successful!");
+  setTimeout(()=>{ window.location.href = redirect; },700);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && loginPanel.style.display!=='none'){
+    doLogin();
+  }
+});
+
+selectRole('student');
+showPanel('login');
+
+  </script>
+
+</body>
+</html>

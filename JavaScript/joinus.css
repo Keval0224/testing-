@@ -1,0 +1,115 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;      
+}
+
+.container {
+    width: 380px;
+    padding: 25px;
+    background: #fff;
+    border-radius: 12px;
+    border: 2px solid #c80000;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;      
+}
+
+
+.login-box {
+    background: #ffffff;
+    border: 2px solid #d60000;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(214,0,0,0.15);
+    text-align: center;
+}
+
+.logo {
+    width: 110px;
+    margin-bottom: 15px;
+}
+
+h2 {
+    color: #d60000;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+#loginForm input[type="text"],
+#loginForm input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid #d60000;
+    border-radius: 6px;
+}
+
+/* RADIO BUTTONS */
+.role-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0 20px 0;
+}
+
+.role-option {
+    flex: 1;
+    position: relative;
+}
+
+.role-option input {
+    display: none; /* Hide actual radio */
+}
+
+.role-option span {
+    display: block;
+    padding: 10px;
+    text-align: center;
+    border: 2px solid #d60000;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #d60000;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+/* When selected */
+.role-option input:checked + span {
+    background: #d60000;
+    color: #ffffff;
+}
+
+/* Hover effect */
+.role-option span:hover {
+    background: #d60000;
+    color: #ffffff;
+}
+
+.loginBtn {
+    width: 100%;
+    padding: 12px;
+    background: #d60000;
+    color: #ffffff;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.loginBtn:hover {
+    opacity: 0.9;
+}

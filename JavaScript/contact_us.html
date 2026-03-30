@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us | ITMBU</title>
+
+<!------ FONTS ------>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+<style>
+/* THEME COLORS */
+:root{
+  --accent:#0a63b7;
+  --glass-bg:rgba(255,255,255,0.15);
+  --glow:#42a5ff;
+}
+
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins", sans-serif;
+}
+
+/* FULL BG + ANIMATION */
+body{
+  height:100vh;
+  width:100%;
+  overflow:hidden;
+  background:linear-gradient(120deg,#001f3f,#f80303,#f50505);
+  background-size:300% 300%;
+  animation:bgAnim 10s infinite alternate ease-in-out;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+@keyframes bgAnim{
+  0%{background-position:0% 50%;}
+  100%{background-position:100% 50%;}
+}
+
+/* CONTACT WRAPPER */
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(14px);
+  border-radius:18px;
+  padding:40px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.2);
+  color:white;
+}
+
+/* HEADING */
+h1{
+  text-align:center;
+  font-size:40px;
+  font-family:"Playfair Display", serif;
+  letter-spacing:1px;
+  margin-bottom:10px;
+}
+
+h1 span{
+  color:#e4e8e0;
+}
+
+/* SUBTEXT */
+.subtitle{
+  text-align:center;
+  font-size:15px;
+  opacity:0.8;
+  margin-bottom:30px;
+}
+
+/* FORM GRID */
+form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+form .full{
+  grid-column:1 / 3;
+}
+
+/* INPUTS */
+input, textarea{
+  width:100%;
+  padding:14px 16px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.4);
+  background:rgba(255,255,255,0.13);
+  color:white;
+  font-size:15px;
+  outline:none;
+  transition:0.25s;
+}
+
+input:focus, textarea:focus{
+  border-color:var(--glow);
+  box-shadow:0 0 12px var(--glow);
+}
+
+/* TEXTAREA */
+textarea{
+  resize:none;
+  height:150px;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  grid-column:1 / 3;
+  padding:15px;
+  border:none;
+  border-radius:14px;
+  font-size:18px;
+  font-weight:600;
+  cursor:pointer;
+  color:#fff;
+  background:linear-gradient(90deg,#c20707,#e71616);
+  box-shadow:0 6px 20px rgba(0,140,255,0.35);
+  transition:0.3s;
+}
+
+button:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 26px rgba(216, 4, 4, 0.55);
+}
+
+/* CONTACT INFO SIDE */
+.info{
+  margin-top:35px;
+  text-align:center;
+}
+
+.info p{
+  margin:6px 0;
+  font-size:15px;
+  opacity:0.9;
+}
+
+.info span{
+  font-weight:600;
+}
+
+/* RESPONSIVE */
+@media(max-width:720px){
+  form{
+    grid-template-columns:1fr;
+  }
+  button{
+    grid-column:1/2;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Contact <span>Us</span></h1>
+  <p class="subtitle">We’d love to hear from you — reach out anytime.</p>
+
+  <form>
+    <div>
+      <input type="text" placeholder="First Name" required>
+    </div>
+
+    <div>
+      <input type="text" placeholder="Last Name" required>
+    </div>
+
+    <div>
+      <input type="email" placeholder="Email Address" required>
+    </div>
+
+    <div>
+      <input type="text" placeholder="Phone Number" required>
+    </div>
+
+    <div class="full">
+      <textarea placeholder="Write your message here..." required></textarea>
+    </div>
+
+    <button type="submit">Send Message</button>
+  </form>
+
+  <div class="info">
+    <p><span>Email:</span> support@itmbu.ac.in</p>
+    <p><span>Phone:</span> +91 98765 43210</p>
+    <p><span>Address:</span> ITM SLS Baroda University, Vadodara</p>
+  </div>
+
+</div>
+
+</body>
+</html>
