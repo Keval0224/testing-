@@ -1,9 +1,11 @@
 FROM node:20-alpine
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Saari files copy karo
 COPY . .
-# No build step required
+
+# Port open karo
 EXPOSE 3000
-CMD ["npm","start"]
+
+# Bina kisi installation ke sedhe static website serve karo 
+CMD ["npx", "serve", "JavaScript", "-l", "3000"]
